@@ -116,7 +116,7 @@ CREATE OR REPLACE TRIGGER TR_AtualizaTabelaAuditoria
     CREATE OR ALTER OR DROP ON SCHEMA
 BEGIN
     INSERT INTO AuditoriaDB
-    SELECT USER, SYSDATE, CURRENT_DATE, SYS.SYSEVENT, SYS.DICTIONARY_OBJ_NAME
+    SELECT USER, SYSDATE, CURRENT_DATE, SYS.DICTIONARY_OBJ_TYPE, SYS.DICTIONARY_OBJ_NAME
         FROM DUAL;
     
 END TR_AtualizaTabelaAuditoria;
@@ -140,15 +140,14 @@ DROP TABLE Historico_em_gravadora;
 --c. Quais são as possíveis soluções desse problema? Apenas cite, não é necessário fazer
 --as soluções.
 --Há 3 soluções possiveis, são elas:
---1)Uso combinado de Triggers e Packages
---2)Uso de trasação autônoma
---3)Uso combinado de Triggers e Views
+--1.Uso combinado de Triggers e Packages
+--2.Uso de trasação autônoma
+--3.Uso combinado de Triggers e Views
 
 
 --5) (1,0) Faça uma consulta que retorne informações relevantes (nome, tipo, dono, evento que
 --aciona a trigger, objeto que a trigger age, etc) a respeito de cada trigger do seu banco de
 --dados. (Dica: Há uma visão com esses dados. Pesquise!)
-
 
 
 --Transações
