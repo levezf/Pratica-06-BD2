@@ -217,22 +217,26 @@ END P_AtualizaQuantidadeGravacoes;
 COMMIT;
 
 --d. Transações autônomas
-CREATE OR REPLACE TRIGGER TR_AtualizaQunatidadeDeMusica
-    BEFORE
-    INSERT OR DELETE ON Composicao
-    FOR EACH ROW 
+CREATE OR REPLACE PROCEDURE P_AtualizaQuantidadeGravacoes(
+    v_tipo_de_operacao IN VARCHAR, 
+    id_musica IN Composicao.id_musica%TYPE
+)
+IS
+    PRAGMA AUTONOMOUS_TRANSACTION;
 BEGIN
     
-    IF INSERTING THEN 
-        P_AtualizaQuantidadeGravacoes('INSERT', :new.id_musica);
-    ELSE
-        P_AtualizaQuantidadeGravacoes('DELETE',:old.id_musica);
+    IF v_tipo_de_operacao LIKE 'INSERT' THEN
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes+1 WHERE id = id_musica; 
+    ELSE 
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes-1 WHERE id = id_musica; 
     END IF;
     COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('ERRO');           
-END TR_AtualizaQunatidadeDeMusica;
+            DBMS_OUTPUT.PUT_LINE('ERRO, DESFAZENDO ALTERAÇÕES...');
+            ROLLBACK;      
+END P_AtualizaQuantidadeGravacoes;
+
 
 
 
@@ -240,5 +244,3 @@ END TR_AtualizaQunatidadeDeMusica;
 --7) (2,5) Faça uma análise dos banco de dados DISCOGRAFIA (utilizado nas práticas) e do
 --FUTEBOL (utilizado nas aulas). Para cada BD, informe os problemas de cada um e o que pode
 --ser melhorado. Seja criterioso!
-
-
