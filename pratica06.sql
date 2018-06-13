@@ -14,8 +14,8 @@ BEGIN
         VALUES (:old.id_Artista, :old.id_banda, :old.inicio, :old.funcao, SYSDATE);
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('ERRO, DESFAZENDO ALTERAÇÔES...');
-            ROLLBACK;
+            DBMS_OUTPUT.PUT_LINE('ERRO');
+
 END TR_AtualizaRegistroDeArtista;
 /
 SELECT * FROM Historico_Artista_em_Banda;
@@ -47,8 +47,7 @@ BEGIN
     CLOSE c_listaComposicao;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('ERRO, DESFAZENDO ALTERAÇÔES...');
-            ROLLBACK;
+            DBMS_OUTPUT.PUT_LINE('ERRO');
 END;
 
 /
@@ -67,8 +66,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('ERRO, DESFAZENDO ALTERAÇÔES...');
-            ROLLBACK;
+            DBMS_OUTPUT.PUT_LINE('ERRO');
 END P_AtualizaQuantidadeGravacoes;
 /
 
@@ -85,8 +83,7 @@ BEGIN
     END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('ERRO, DESFAZENDO ALTERAÇÔES...');
-            ROLLBACK;
+            DBMS_OUTPUT.PUT_LINE('ERRO');
 END TR_AtualizaQunatidadeDeMusica;
 /
 SELECT * FROM Composicao;
@@ -140,9 +137,9 @@ DROP TABLE Historico_em_gravadora;
 --c. Quais são as possíveis soluções desse problema? Apenas cite, não é necessário fazer
 --as soluções.
 --Há 3 soluções possiveis, são elas:
---1.Uso combinado de Triggers e Packages
---2.Uso de trasação autônoma
---3.Uso combinado de Triggers e Views
+--1)Uso combinado de Triggers e Packages
+--2)Uso de trasação autônoma
+--3)Uso combinado de Triggers e Views
 
 
 --5) (1,0) Faça uma consulta que retorne informações relevantes (nome, tipo, dono, evento que
@@ -150,14 +147,92 @@ DROP TABLE Historico_em_gravadora;
 --dados. (Dica: Há uma visão com esses dados. Pesquise!)
 
 
+
+
+
 --Transações
 --6) (1,0) Escolha 4 blocos PL/SQL que você já fez nas práticas anteriores e faça alterações que
 --controlem as transações que façam sentido para o domínio da aplicação e do problema.
 --Minimamente faça uso de:
+
 --a. COMMIT
+CREATE OR REPLACE PROCEDURE P_AtualizaQuantidadeGravacoes(
+    v_tipo_de_operacao IN VARCHAR, 
+    id_musica IN Composicao.id_musica%TYPE
+)
+IS
+BEGIN
+    IF v_tipo_de_operacao LIKE 'INSERT' THEN
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes+1 WHERE id = id_musica; 
+    ELSE 
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes-1 WHERE id = id_musica; 
+    END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ERRO');
+END P_AtualizaQuantidadeGravacoes;
+
+COMMIT;
+
 --b. ROLLBACK
+CREATE OR REPLACE PROCEDURE P_AtualizaQuantidadeGravacoes(
+    v_tipo_de_operacao IN VARCHAR, 
+    id_musica IN Composicao.id_musica%TYPE
+)
+IS
+BEGIN
+    
+    IF v_tipo_de_operacao LIKE 'INSERT' THEN
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes+1 WHERE id = id_musica; 
+    ELSE 
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes-1 WHERE id = id_musica; 
+    END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ERRO, DESFAZENDO ALTERAÇÕES...');
+            ROLLBACK;
+END P_AtualizaQuantidadeGravacoes;
+COMMIT;
+
 --c. ROLLBACK TO savepoint;
+CREATE OR REPLACE PROCEDURE P_AtualizaQuantidadeGravacoes(
+    v_tipo_de_operacao IN VARCHAR, 
+    id_musica IN Composicao.id_musica%TYPE
+)
+IS
+BEGIN
+    
+    SAVEPOINT do_updates;
+    
+    IF v_tipo_de_operacao LIKE 'INSERT' THEN
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes+1 WHERE id = id_musica; 
+    ELSE 
+        UPDATE Musica SET QuantidadeGravacoes = QuantidadeGravacoes-1 WHERE id = id_musica; 
+    END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ERRO, DESFAZENDO ALTERAÇÕES...');
+            ROLLBACK TO do_updates;
+END P_AtualizaQuantidadeGravacoes;
+COMMIT;
+
 --d. Transações autônomas
+CREATE OR REPLACE TRIGGER TR_AtualizaQunatidadeDeMusica
+    BEFORE
+    INSERT OR DELETE ON Composicao
+    FOR EACH ROW 
+BEGIN
+    
+    IF INSERTING THEN 
+        P_AtualizaQuantidadeGravacoes('INSERT', :new.id_musica);
+    ELSE
+        P_AtualizaQuantidadeGravacoes('DELETE',:old.id_musica);
+    END IF;
+    COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ERRO');           
+END TR_AtualizaQunatidadeDeMusica;
 
 
 
@@ -165,4 +240,5 @@ DROP TABLE Historico_em_gravadora;
 --7) (2,5) Faça uma análise dos banco de dados DISCOGRAFIA (utilizado nas práticas) e do
 --FUTEBOL (utilizado nas aulas). Para cada BD, informe os problemas de cada um e o que pode
 --ser melhorado. Seja criterioso!
+
 
