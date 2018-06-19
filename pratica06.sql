@@ -146,8 +146,7 @@ DROP TABLE Historico_em_gravadora;
 --5) (1,0) Faça uma consulta que retorne informações relevantes (nome, tipo, dono, evento que
 --aciona a trigger, objeto que a trigger age, etc) a respeito de cada trigger do seu banco de
 --dados. (Dica: Há uma visão com esses dados. Pesquise!)
-
-
+SELECT TRIGGER_NAME,TRIGGER_TYPE, TABLE_OWNER ,TRIGGERING_EVENT , STATUS, ACTION_TYPE, BASE_OBJECT_TYPE, TABLE_NAME  FROM USER_TRIGGERS;
 
 
 
