@@ -244,3 +244,35 @@ END P_AtualizaQuantidadeGravacoes;
 --7) (2,5) Faça uma análise dos banco de dados DISCOGRAFIA (utilizado nas práticas) e do
 --FUTEBOL (utilizado nas aulas). Para cada BD, informe os problemas de cada um e o que pode
 --ser melhorado. Seja criterioso!
+--No banco futebol foi retirada a posição, pois seria uma informação que sempre seria necessária calculá-la, então não é necessária estar na base de dados pois pode ser obtida dinamicamente. 
+--Outro problema encontrado foi a existência das tabelas JogadorBrasileiro e JogadorEstrangeiro (já que os dados das duas tabelas são praticamente os mesmos. Então foi criada uma tabela “profissional” já que JogadorBrasileiro também pode ter um passaporte e possui um país de origem(Brasil).Foi criada as tabelas Jogadores e Técnicos como especializações da tabela profissional(com a data de nascimento sendo posta na tabela profissional já que todos a possuem).
+--Portanto a tabela profissional ficou:
+--Profissional = (id,cpf,passaporte,nome,idEquipe,paisOrigem,salario,dataNasc)
+--  CONSTRAINT pk_Profissional PRIMARY KEY (id);
+
+--Jogador = (id,posicao)
+ -- CONSTRAINT pk_Jogador PRIMARY KEY (id);
+--Tecnico(id)
+--  CONSTRAINT pk_Tecnico PRIMARY KEY (id);
+
+--Outro problema encontrado no banco futebol foi  que Estádio e cidade seriam campos que sempre teriam os mesmos pares de valores portanto, faz sentido criar uma tabela Estadio e usar uma chave estrangeira na tabela jogo.
+--Jogo=(id,dataJogo,idEquipeCasa,idEquipeFora,golsEquipeCasa,golsEquipeFora,idEstadio,idCampeonato)
+--  CONSTRAINT pk_jogo PRIMARY KEY (id),
+ -- CONSTRAINT fk_jogo idEstadio FOREIGN KEY(idEstadio)
+  --  REFERENCES Estadio(id)
+
+--Estadio =(id,nome,idCidade)
+ -- CONSTRAINT pk_Estadio PRIMARY KEY (id),
+  --CONSTRAINT fk_Estadio idCidade FOREIGN KEY(idCidade)
+   -- REFERENCES Cidade(id)
+
+--Também foi retirada do banco futebol “PaisesTecnicos” ,pois com a especialização o pais de origem do técnico foi colocado na tabela profissional.
+
+--Já no banco discografia  foi retirada a tabela de “Histórico Artista em Banda” já que é uma tabela parecida com a tabela “Artista em Banda”.O que difere nas duas tabelas é o campo “fim”. Isso pode ser resolvido colocando o campo “fim” na tabela “Artista em Banda”. Se a “parceria” for atual o “fim” ficaria como null.
+--Além disso  no banco discografia foi retirado o dado “tipo” pois pode-se considerar “banda” e “artista” como especializações de “Bandas__e_Artistas” e é possível identificar o tipo pela junção das tabelas.
+--No banco discografia também foi retirado o dado “tipo” pois pode-se considerar banda uma especialização de Bandas__e_Artistas e é possível identificar o tipo pela junção das tabelas.
+--A última resolução no banco discografia foi colocando o id na composição pois ela pode estar associada a mais de um artista. Aí foi criada a tabela “composicaoArtista” para esse relacionamento(N:N).
+--composicaoArtista = (id,id_musica,data)
+--CONSTRAINT pk_composicaoArtista PRIMARY KEY(id),
+--CONSTRAINT fk_composicao_musica FOREIGN KEY (id_musica) REFERENCES Musica;
+
